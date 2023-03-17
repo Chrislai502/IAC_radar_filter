@@ -25,7 +25,7 @@ class FilterNode(Node):
     '''
     std_msgs/Header header
 
-    # ESR Track
+    # ESR Track (Not the most accurate)
     string        canmsg
 
     uint8         id
@@ -41,6 +41,30 @@ class FilterNode(Node):
     float32       range_accel
     uint8         med_range_mode
     float32       range_rate
+
+    Example ESR message:
+    header:
+      stamp:
+        sec: 1673037874
+        nanosec: 743309147
+      frame_id: radar_front
+    canmsg: 7c6065b83ffb559
+    track_id: 42
+    track_lat_rate: 7.75
+    track_group_changed: false
+    track_status: 3
+    track_angle: -1.2000000476837158
+    track_range: 146.40000915527344
+    track_bridge_object: false
+    track_rolling_count: false
+    track_width: 0.0
+    track_range_accel: -0.05000000074505806
+    track_med_range_mode: 2
+    track_range_rate: -27.26999855041504
+
+    
+    Example Marker message:
+    Marker basically only have x and Y coordinates.
     '''
     self.esr_track_subscription = self.create_subscription(
         EsrTrack, 
@@ -71,9 +95,17 @@ class FilterNode(Node):
     marker.color.a = 1.0
     return marker
 
-  def esr_track_callback(self, msg):
 
-    # print (f"esr ID: {msg.track_id}")
+  # ---------------------------------------------------------------------------- #
+  #                                 ESR CALLBACK                                 #
+  # ---------------------------------------------------------------------------- #
+  def esr_track_callback(self, msg):
+    '''
+    The ESR callback function is the function that will be called the most.
+    Based on experieriment with ROSBAG data, There is around 7 ESR msgs for every
+    marker msg. And Descovery is that ESR messages does come a little later than 
+    its marker messages. Example is shown below. 
+    '''
 
     # Append the ID and the message to the buffer
     self.esr_id_buffer.append(msg.track_id)
@@ -114,17 +146,20 @@ class FilterNode(Node):
       self.most_recent_marker = None
       self.filtered_marker = None
 
+
+  # ---------------------------------------------------------------------------- #
+  #                                MARKER CALLBACK                               #
+  # ---------------------------------------------------------------------------- #
   def marker_callback(self, msg):
-    # print (f"marker ID: {msg.id}")
+
+    # Update the most recent marker
     self.most_recent_marker = msg
 
     # If the marker message comes later
     '''
-    Example:
-    None, ESR normally comes later.
+    Rare case, ESR msg normally comes later.
     But regardless, check if ESR has arrived.
     '''
-    # print (f"esr ID: {self.esr_id_buffer}")
     self.check()
 
   # Check the two messages and filter our if necessary
