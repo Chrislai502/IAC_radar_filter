@@ -1,3 +1,5 @@
+Do note that this is a naive proof of concept algorithm that takes the local min. Reach out to chrislai_502@berkeley.edu for discussions of the complete implementation
+
 # ROS2 Python Radar Detection Filter Node
 
 This package contains a radar detection filter node for ROS2 that processes `delphi_esr_msgs/msg/EsrTrack` and `visualization_msgs/msg/Marker` messages. The node subscribes to these messages, filters the incoming data, and publishes filtered data as `visualization_msgs/msg/Marker` messages. 
